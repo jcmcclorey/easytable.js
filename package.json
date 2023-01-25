@@ -1,0 +1,14 @@
+{
+  "name": "easytable.js",
+  "version": "1.0.0",
+  "description": "vanilla JS package to add simple pagination, sorting and filtering to HTML tables",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "easytable"
+  ],
+  "author": "Joseph McClorey",
+  "license": "ISC"
+}
