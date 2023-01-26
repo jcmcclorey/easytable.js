@@ -293,7 +293,7 @@ var EasyTable = (function() {
                     if ($properties.paginationSideLinks > 0) {
                         pagination.draw();
                     } else {
-                        document.querySelector($properties.paginationContainer).querySelectorAll('li.page-item.active').foreEach(e => e.classList.remove('active'));
+                        document.querySelector($properties.paginationContainer).querySelectorAll('li.page-item.active').forEach(e => e.classList.remove('active'));
                         document.querySelector(`a.page-link[data-page="${$properties.pageActive}"]`).closest('li.page-item').classList.add('active');
                         event.target.dispatchEvent(new Event($events.pageSelect));
                     }
