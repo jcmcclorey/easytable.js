@@ -1,6 +1,6 @@
 {
   "name": "easytable.js",
-  "version": "0.0.3",
+  "version": "1.1.0",
   "description": "Vanilla JS package to add simple pagination, sorting and filtering to HTML tables",
   "main": "index.js",
   "scripts": {
@@ -23,8 +23,5 @@
   "bugs": "https://github.com/jcmcclorey/easytable.js/issues",
   "contributors": [
     "Joe McClorey <jcmcclorey@protonmail.com> (https://github.com/jcmcclorey)"
-  ],
-  "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.1.0"
-  }
+  ]
 }

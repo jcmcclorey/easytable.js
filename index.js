@@ -99,9 +99,9 @@ var EasyTable = (function() {
         stickyHeaderTop: '',
         sorting: false,
         sortingIcons: {
-            none: 'fa-sort',
-            asc: 'fa-sort-down',
-            desc: 'fa-sort-up',
+            none: '',
+            asc: '',
+            desc: '',
         },
     };
 
@@ -161,6 +161,19 @@ var EasyTable = (function() {
     };
 
     let tools = {
+        buildIcon: (icon) => {
+            if (typeof icon == 'function') {
+                return icon();
+            } else if (typeof icon == 'string') {
+                if (tools.isValidHTML(icon) || icon.startsWith('&')) {
+                    return icon;
+                } else {
+                    return `<i class="${icon}"></i>`;
+                }
+            } else {
+                return '';
+            }
+        },
         hideElement: (element) => element.style.display = 'none',
         hideElements: (elements) => {
             for (let i = 0; i < elements.length; i++) {
@@ -182,6 +195,7 @@ var EasyTable = (function() {
         isInputText: (element) => tools.elementIs(element, 'INPUT') && element.type.toUpperCase() == 'TEXT',
         isSelect: (element) => tools.elementIs(element, 'SELECT'),
         isTable: (element) => tools.elementIs(element, 'TABLE'),
+        isValidHTML: (str) => /<(?=.*? .*?\/ ?>|br|hr|input|!--|wbr)[a-z]+.*?>|<([a-z]+).*?<\/\1>/i.test(str),
         loadingOverlay: (status, container_height = '350px', color = 'gray') => {
             const $class = 'loading-overlay';
 
@@ -260,6 +274,18 @@ var EasyTable = (function() {
                 }
             }
 
+            const style = window.getComputedStyle($element.querySelector('thead th:first-child'));
+
+            for (const dir in properties.sortingIcons) {
+                if (typeof properties.sortingIcons[dir] == 'string' && !properties.sortingIcons[dir].length) {
+                    properties.sortingIcons[dir] = tools.sorting.defaultIcon(
+                        dir,
+                        style.getPropertyValue('color'),
+                        Number(style.getPropertyValue('font-size').replace('px', '')) / 2
+                    );
+                }
+            }
+
             return properties;
         },
         pagination: {
@@ -330,6 +356,36 @@ var EasyTable = (function() {
             }
         },
         sorting: {
+            defaultIcon: (direction, color = 'black', font_size = 7) => {
+                let template = `<span style="width: 0; height: 0; display: inline-block; border: ${font_size}px solid transparent; border-$1-color: ${color};"></span>`;
+                let top = parseInt(font_size) - 1;
+
+                if (direction == 'asc') {
+                    return [
+                        `<div style="width: fit-content; height: 0px; position: relative; top: ${top}px; display: inline-block;">`,
+                            template.replace('$1', 'top'),
+                        '</div>',
+                    ].join('');
+                } else if (direction == 'desc') {
+                    return [
+                        `<div style="width: fit-content; height: 0px; position: relative; top: -3px; display: inline-block;">`,
+                            template.replace('$1', 'bottom'),
+                        '</div>',
+                    ].join('');
+                } else {
+                    return [
+                        `<div style="display: inline-flex; height: ${font_size * 2}px; align-content: baseline; flex-flow: column;">`,
+                            `<div style="width: fit-content; height: 0px; position: relative; top: ${(top + 1) * -1}px;">`,
+                                template.replace('$1', 'bottom'),
+                            '</div>',
+                            `<div style="width: fit-content; height: 0px; position: relative; top: ${((top + 1) * -1) + (parseInt(font_size) * 2) + 2}px;">`,
+                                template.replace('$1', 'top'),
+                            '</div>',
+                        '</div>',
+                    ].join('');
+                }
+            },
+            getIcon: (type) => tools.buildIcon($properties.sortingIcons[['asc', 'desc', 'none'].includes(type) ? type : 'none']),
             onClick: (event, element) => {
                 let th = tools.elementIs(event.target, 'TH') ? event.target : event.target.closest('th.et-sortable');
                 let descending = th.dataset.ascending == 0;
@@ -360,18 +416,13 @@ var EasyTable = (function() {
                 }
             },
             updateIcons: (event, ascending) => {
-                let sort_icon = ascending ? $properties.sortingIcons.asc : $properties.sortingIcons.desc;
+                let th = tools.elementIs(event.target, 'TH') ? event.target : event.target.closest('th.et-sortable');
 
                 $element.querySelectorAll('thead > tr > th.et-sortable').forEach(e => {
-                    e.querySelector('span.et-table-sort > i.fas').classList.remove($properties.sortingIcons.asc, $properties.sortingIcons.desc);
-                    e.querySelector('span.et-table-sort > i.fas').classList.add($properties.sortingIcons.none);
+                    e.querySelector('span.et-table-sort').innerHTML = tools.sorting.getIcon('none');
                 });
 
-                let th = tools.elementIs(event.target, 'TH') ? event.target : event.target.closest('th.et-sortable');
-                let icon = th.querySelector('span.et-table-sort > i.fas');
-
-                icon.classList.remove($properties.sortingIcons.none);
-                icon.classList.add(sort_icon);
+                th.querySelector('span.et-table-sort').innerHTML = tools.sorting.getIcon(ascending ? 'asc' : 'desc');
             },
         },
     };
@@ -402,7 +453,7 @@ var EasyTable = (function() {
                     '<ul id="et-pagination" class="pagination">',
                     '<li class="page-item">',
                         '<a class="page-link" href="#" aria-label="Previous" data-page="prev">',
-                            `<span aria-hidden="true">${$properties.paginationPrevious.arrow}</span>`,
+                            `<span aria-hidden="true">${tools.buildIcon($properties.paginationPrevious.arrow)}</span>`,
                         '</a>',
                     '</li>',
                 ];
@@ -459,7 +510,7 @@ var EasyTable = (function() {
                 inner_html.push(
                     '<li class="page-item">',
                         '<a class="page-link" href="#" aria-label="Next" data-page="next">',
-                            `<span aria-hidden="true">${$properties.paginationNext.arrow}</span>`,
+                            `<span aria-hidden="true">${tools.buildIcon($properties.paginationNext.arrow)}</span>`,
                         '</a>',
                     '</li>',
                     '</ul>'
@@ -557,12 +608,7 @@ var EasyTable = (function() {
                 if (tools.isTable($element)) {
                     $element.querySelectorAll('thead > tr > th.et-sortable').forEach(element => {
                         element.style.cursor = 'pointer';
-
-                        element.innerHTML = element.innerHTML + [
-                            '<span class="et-table-sort" style="margin-left: 5px;">',
-                                `<i class="fas ${$properties.sortingIcons.none}"></i>`,
-                            '</span>'
-                        ].join('');
+                        element.innerHTML = element.innerHTML + `<span class="et-table-sort" style="margin-left: 5px;">${tools.sorting.getIcon('none')}</span>`;
 
                         if (tools.isAjax()) {
                             element.addEventListener('click', (event) => {
@@ -579,8 +625,7 @@ var EasyTable = (function() {
         },
         reset: () => {
             $element.querySelectorAll('thead > tr > th.et-sortable').forEach(e => {
-                e.querySelector('span.et-table-sort > i.fas').classList.remove($properties.sortingIcons.asc, $properties.sortingIcons.desc);
-                e.querySelector('span.et-table-sort > i.fas').classList.add($properties.sortingIcons.none);
+                e.querySelector('span.et-table-sort').innerHTML = tools.sorting.getIcon();
                 e.dataset.ascending = '1';
             });
         },
