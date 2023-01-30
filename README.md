@@ -1,6 +1,8 @@
 # EasyTable.js
 EasyTable.js is a simple VanillaJS solution for adding pagination, sorting and filtering to HTML tables whether the data is loaded on page render or via AJAX.
 
+[![Npm package version](https://badgen.net/npm/v/easytable.js)](https://npmjs.com/package/easytable.js) [![Npm package total downloads](https://badgen.net/npm/dt/easytable.js)](https://npmjs.com/package/easytable.js) [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/jcmcclorey/easytable.js/blob/master/license.txt) [![JavaScript](https://img.shields.io/badge/--F7DF1E?logo=javascript&logoColor=000)](https://www.javascript.com/)
+
 ## Installation
 
 ```bash
