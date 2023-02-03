@@ -206,6 +206,7 @@ var EasyTable = (function() {
                     div.classList.add($class);
                     div.style.height = container_height;
                     div.style.minHeight = '150px';
+                    div.style.position = 'relative';
 
                     // TODO: use device width to determine width and height
                     // @credit => https://www.benmvp.com/blog/how-to-create-circle-svg-gradient-loading-spinner/
@@ -241,7 +242,7 @@ var EasyTable = (function() {
                         let tr = document.createElement('tr');
                         tr.appendChild(td);
 
-                        $element.querySelector('tbody').replaceChildren(tr)
+                        $element.querySelector('tbody').replaceChildren(tr);
                     }
                 }
             } else if (status == 'stop') {
@@ -296,7 +297,7 @@ var EasyTable = (function() {
                 count_text = count_text.replace('{PF}', page_start);
                 count_text = count_text.replace('{PL}', page_end);
                 count_text = count_text.replace('{TR}', total);
-    
+
                 if (!page_end) {
                     tools.hideElement($element.querySelector($properties.countTextContainer));
                 } else {
