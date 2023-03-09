@@ -230,7 +230,6 @@ var EasyTable = (function() {
                                         '<path stroke="url(#spinner-firstHalf)" d="M 196 100 A 96 96 0 0 1 4 100" />',
                                         '<path stroke="currentColor" stroke-linecap="round" d="M 4 100 A 96 96 0 0 1 4 98" />',
                                     '</g>',
-                                    '<animateTransform from="0 0 0" to="360 0 0" attributeName="transform" type="rotate" repeatCount="indefinite" dur="1300ms" />',
                                 '</svg>',
                             '</div>',
                         '</div>'
