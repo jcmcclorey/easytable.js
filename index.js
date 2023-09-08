@@ -16,21 +16,16 @@
  *
  * @param {Object} options
  */
-var EasyTable = (function() {
-    /**
-     * element
-     */
-    let $element;
+function EasyTable(selector, options = []) {
+    let _this = this;
 
     /**
      * events
      */
-    const $events = {
+    _this.events = {
         pageNext: 'et.page_next',
         pageSelect: 'et.page_select',
     };
-
-    let $_init = true;
 
     /**
      * - ajax
@@ -60,7 +55,8 @@ var EasyTable = (function() {
      *      - asc - sorting ascending
      *      - desc - sorting descending
      */
-    let $properties = {
+    // let _this.properties = {
+    _this.properties = {
         ajax: {
             columns: [],
             data: {},
@@ -106,21 +102,11 @@ var EasyTable = (function() {
     };
 
     /**
-     * constructor
-     * 
-     * @param {String} selector
-     * @param {Object} options
-     */
-    function EasyTable(selector, options = []) {
-        init(selector, options);
-    }
-
-    /**
      * get the current page
      * 
      * @returns {Number}
      */
-    EasyTable.prototype.getCurrentPage = () => pagination.getPage();
+    EasyTable.prototype.getCurrentPage = () => _this.pagination.getPage();
 
     /**
      * set the current page
@@ -128,7 +114,7 @@ var EasyTable = (function() {
      * @param {Number} page
      */
     EasyTable.prototype.setCurrentPage = (page = 1) => {
-        if ($properties.pagination) pagination.setPage(page);
+        if (_this.properties.pagination) _this.pagination.setPage(page);
     };
 
     /**
@@ -136,7 +122,7 @@ var EasyTable = (function() {
      * 
      * @returns {Object}
      */
-    EasyTable.prototype.getProperties = () => $properties;
+    EasyTable.prototype.getProperties = () => _this.properties;
 
     /**
      * load a page
@@ -144,28 +130,44 @@ var EasyTable = (function() {
      * @param {Number}  page
      * @param {Boolean} reset_sort
      */
-    EasyTable.prototype.loadPage = (page = null, reset_sort = false) => ajax.loadPage(page, reset_sort);
+    EasyTable.prototype.loadPage = (page = null, reset_sort = false) => _this.ajax.loadPage(page, reset_sort);
 
     /**
      * refresh EasyTable
      */
     EasyTable.prototype.refresh = () => {
-        if (Math.ceil(pagination.getRowsLength() / pagination.getPageSize()) < pagination.getPage()) {
-            pagination.setPage(Math.floor(pagination.getRowsLength() / pagination.getPageSize()))
+        if (Math.ceil(_this.pagination.getRowsLength() / _this.pagination.getPageSize()) < _this.pagination.getPage()) {
+            _this.pagination.setPage(Math.floor(_this.pagination.getRowsLength() / _this.pagination.getPageSize()))
         }
 
-        pagination.setPageCount();
-        pagination.drawPage();
-        pagination.draw();
-        pagination.drawCount();
+        _this.pagination.setPageCount();
+        _this.pagination.drawPage();
+        _this.pagination.draw();
+        _this.pagination.drawCount();
     };
 
-    let tools = {
+    /**
+     * trigger certain events on this EasyTable
+     * 
+     * @param {String} event 
+     */
+    EasyTable.prototype.trigger = (event) => {
+        switch (event) {
+            case 'filter':
+                _this.filtering.run();
+                break;
+            default:
+                //
+                break;
+        }
+    };
+
+    _this.tools = {
         buildIcon: (icon) => {
             if (typeof icon == 'function') {
                 return icon();
             } else if (typeof icon == 'string') {
-                if (tools.isValidHTML(icon) || icon.startsWith('&')) {
+                if (_this.tools.isValidHTML(icon) || icon.startsWith('&')) {
                     return icon;
                 } else {
                     return `<i class="${icon}"></i>`;
@@ -177,31 +179,31 @@ var EasyTable = (function() {
         hideElement: (element) => element.style.display = 'none',
         hideElements: (elements) => {
             for (let i = 0; i < elements.length; i++) {
-                tools.hideElement(elements[i]);
+                _this.tools.hideElement(elements[i]);
             }
         },
         elementIs: (element, node_name) => element.nodeName == node_name,
-        isAjax: () => $properties.dataType == 'ajax',
-        isButton: (element) => tools.elementIs(element, 'BUTTON'),
+        isAjax: () => _this.properties.dataType == 'ajax',
+        isButton: (element) => _this.tools.elementIs(element, 'BUTTON'),
         isEmpty: () => {
             let empty = false;
 
-            if (tools.isAjax() && tools.isTable($element)) {
-                empty = $element.querySelector('tbody > tr > td:first-child').innerText == $properties.ajax.emptyText;
+            if (_this.tools.isAjax() && _this.tools.isTable(_this.element)) {
+                empty = _this.element.querySelector('tbody > tr > td:first-child').innerText == _this.properties.ajax.emptyText;
             }
 
             return empty;
         },
-        isInputText: (element) => tools.elementIs(element, 'INPUT') && element.type.toUpperCase() == 'TEXT',
-        isSelect: (element) => tools.elementIs(element, 'SELECT'),
-        isTable: (element) => tools.elementIs(element, 'TABLE'),
+        isInputText: (element) => _this.tools.elementIs(element, 'INPUT') && element.type.toUpperCase() == 'TEXT',
+        isSelect: (element) => _this.tools.elementIs(element, 'SELECT'),
+        isTable: (element) => _this.tools.elementIs(element, 'TABLE'),
         isValidHTML: (str) => /<(?=.*? .*?\/ ?>|br|hr|input|!--|wbr)[a-z]+.*?>|<([a-z]+).*?<\/\1>/i.test(str),
         loadingOverlay: (status, container_height = '350px', color = 'gray') => {
             const $class = 'loading-overlay';
             const $container_id = '_et_spinner_container';
 
             if (status == 'start') {
-                let div = $element.querySelector(`.${$class}`);
+                let div = _this.element.querySelector(`.${$class}`);
                 if (div == null) {
                     div = document.createElement('div');
                     div.classList.add($class);
@@ -235,7 +237,7 @@ var EasyTable = (function() {
                         '</div>'
                     ].join('');
 
-                    if (tools.isTable($element)) {
+                    if (_this.tools.isTable(_this.element)) {
                         let td = document.createElement('td');
                         td.setAttribute('colspan', 100);
                         td.appendChild(div);
@@ -244,7 +246,7 @@ var EasyTable = (function() {
                         let tr = document.createElement('tr');
                         tr.appendChild(td);
 
-                        $element.querySelector('tbody').replaceChildren(tr);
+                        _this.element.querySelector('tbody').replaceChildren(tr);
 
                         document.getElementById($container_id).animate(
                             [
@@ -260,7 +262,7 @@ var EasyTable = (function() {
                     }
                 }
             } else if (status == 'stop') {
-                let div = $element.querySelector(`.${$class}`);
+                let div = _this.element.querySelector(`.${$class}`);
                 if (div != null) div.remove();
             }
         },
@@ -289,11 +291,11 @@ var EasyTable = (function() {
                 }
             }
 
-            const style = window.getComputedStyle($element.querySelector('thead th:first-child'));
+            const style = window.getComputedStyle(_this.element.querySelector('thead th:first-child'));
 
             for (const dir in properties.sortingIcons) {
                 if (typeof properties.sortingIcons[dir] == 'string' && !properties.sortingIcons[dir].length) {
-                    properties.sortingIcons[dir] = tools.sorting.defaultIcon(
+                    properties.sortingIcons[dir] = _this.tools.sorting.defaultIcon(
                         dir,
                         style.getPropertyValue('color'),
                         Number(style.getPropertyValue('font-size').replace('px', '')) / 2
@@ -305,18 +307,18 @@ var EasyTable = (function() {
         },
         pagination: {
             drawCount: (page_start, page_end, total) => {
-                let count_text = $properties.countText;
-                count_text = count_text.replace('{CP}', $properties.pageActive);
-                count_text = count_text.replace('{TP}', pagination.page_count);
+                let count_text = _this.properties.countText;
+                count_text = count_text.replace('{CP}', _this.properties.pageActive);
+                count_text = count_text.replace('{TP}', _this.pagination.page_count);
                 count_text = count_text.replace('{PF}', page_start);
                 count_text = count_text.replace('{PL}', page_end);
                 count_text = count_text.replace('{TR}', total);
 
                 if (!page_end) {
-                    tools.hideElement($element.querySelector($properties.countTextContainer));
+                    _this.tools.hideElement(_this.element.querySelector(_this.properties.countTextContainer));
                 } else {
-                    $element.querySelector($properties.countTextContainer).innerText = count_text;
-                    tools.showElement($element.querySelector($properties.countTextContainer));
+                    _this.element.querySelector(_this.properties.countTextContainer).innerText = count_text;
+                    _this.tools.showElement(_this.element.querySelector(_this.properties.countTextContainer));
                 }
             },
             onClick: (event) => {
@@ -324,22 +326,22 @@ var EasyTable = (function() {
 
                 if (!event.target.closest('li.page-item').classList.contains('active')) {
                     if (isNaN(event.target.dataset.page)) {
-                        pagination.setPage((event.target.dataset.page == 'next') ? $properties.pageActive + 1 : $properties.pageActive - 1);
+                        _this.pagination.setPage((event.target.dataset.page == 'next') ? _this.properties.pageActive + 1 : _this.properties.pageActive - 1);
                     } else {
-                        pagination.setPage(event.target.dataset.page);
+                        _this.pagination.setPage(event.target.dataset.page);
                     }
 
-                    pagination.drawPage();
+                    _this.pagination.drawPage();
 
-                    if ($properties.paginationSideLinks > 0) {
-                        pagination.draw();
+                    if (_this.properties.paginationSideLinks > 0) {
+                        _this.pagination.draw();
                     } else {
-                        document.querySelector($properties.paginationContainer).querySelectorAll('li.page-item.active').forEach(e => e.classList.remove('active'));
-                        document.querySelector(`a.page-link[data-page="${$properties.pageActive}"]`).closest('li.page-item').classList.add('active');
-                        event.target.dispatchEvent(new Event($events.pageSelect));
+                        document.querySelector(_this.properties.paginationContainer).querySelectorAll('li.page-item.active').forEach(e => e.classList.remove('active'));
+                        document.querySelector(`a.page-link[data-page="${_this.properties.pageActive}"]`).closest('li.page-item').classList.add('active');
+                        event.target.dispatchEvent(new Event(_this.events.pageSelect));
                     }
 
-                    pagination.drawCount();
+                    _this.pagination.drawCount();
                 }
             },
             onClickAjax: (event) => {
@@ -348,24 +350,24 @@ var EasyTable = (function() {
                 if (!event.target.closest('li.page-item').classList.contains('active')) {
                     let page = event.target.dataset.page;
                     if (isNaN(event.target.dataset.page)) {
-                        page = event.target.dataset.page == 'next' ? $properties.pageActive + 1 : $properties.pageActive - 1;
+                        page = event.target.dataset.page == 'next' ? _this.properties.pageActive + 1 : _this.properties.pageActive - 1;
                     }
 
-                    ajax.loadPage(page);
+                    _this.ajax.loadPage(page);
                 }
             },
         },
         showElement: (element) => element.style.display = null,
         showElements: (elements) => {
             for (let i = 0; i < elements.length; i++) {
-                tools.showElement(elements[i]);
+                _this.tools.showElement(elements[i]);
             }
         },
         showEmpty: () => {
-            if (tools.isTable($element)) {
-                $element.querySelector('tbody').innerHTML = [
+            if (_this.tools.isTable(_this.element)) {
+                _this.element.querySelector('tbody').innerHTML = [
                     `<tr>`,
-                        `<td style="text-align: center;" colspan="18">${$properties.ajax.emptyText}</td>`,
+                        `<td style="text-align: center;" colspan="18">${_this.properties.ajax.emptyText}</td>`,
                     `</tr>`
                 ].join('');
             }
@@ -400,99 +402,99 @@ var EasyTable = (function() {
                     ].join('');
                 }
             },
-            getIcon: (type) => tools.buildIcon($properties.sortingIcons[['asc', 'desc', 'none'].includes(type) ? type : 'none']),
+            getIcon: (type) => _this.tools.buildIcon(_this.properties.sortingIcons[['asc', 'desc', 'none'].includes(type) ? type : 'none']),
             onClick: (event, element) => {
-                let th = tools.elementIs(event.target, 'TH') ? event.target : event.target.closest('th.et-sortable');
+                let th = _this.tools.elementIs(event.target, 'TH') ? event.target : event.target.closest('th.et-sortable');
                 let descending = th.dataset.ascending == 0;
 
-                tools.sorting.updateIcons(event, !descending);
+                _this.tools.sorting.updateIcons(event, !descending);
 
-                Array.prototype.slice.call(pagination.getRows()).sort(
-                    sorting.comparer(Array.prototype.indexOf.call($element.querySelectorAll('thead > tr > th'), element), !descending)
+                Array.prototype.slice.call(_this.pagination.getRows()).sort(
+                    _this.sorting.comparer(Array.prototype.indexOf.call(_this.element.querySelectorAll('thead > tr > th'), element), !descending)
                 ).forEach(function(tr) {
-                    $element.querySelector('tbody').appendChild(tr);
+                    _this.element.querySelector('tbody').appendChild(tr);
                 });
 
-                pagination.drawPage();
+                _this.pagination.drawPage();
 
                 th.dataset.ascending = (!descending ? 0 : 1);
             },
             onClickAjax: (event) => {
-                if (!tools.isEmpty()) {
-                    let th = tools.elementIs(event.target, 'TH') ? event.target : event.target.closest('th.et-sortable');
+                if (!_this.tools.isEmpty()) {
+                    let th = _this.tools.elementIs(event.target, 'TH') ? event.target : event.target.closest('th.et-sortable');
                     let descending = th.dataset.ascending == 0;
 
-                    tools.sorting.updateIcons(event, !descending);
+                    _this.tools.sorting.updateIcons(event, !descending);
 
-                    ajax.sorting.set(th.dataset.column, descending);
-                    ajax.loadPage(1);
+                    _this.ajax.sorting.set(th.dataset.column, descending);
+                    _this.ajax.loadPage(1);
 
                     th.dataset.ascending = (!descending ? 0 : 1);
                 }
             },
             updateIcons: (event, ascending) => {
-                let th = tools.elementIs(event.target, 'TH') ? event.target : event.target.closest('th.et-sortable');
+                let th = _this.tools.elementIs(event.target, 'TH') ? event.target : event.target.closest('th.et-sortable');
 
-                $element.querySelectorAll('thead > tr > th.et-sortable').forEach(e => {
-                    e.querySelector('span.et-table-sort').innerHTML = tools.sorting.getIcon('none');
+                _this.element.querySelectorAll('thead > tr > th.et-sortable').forEach(e => {
+                    e.querySelector('span.et-table-sort').innerHTML = _this.tools.sorting.getIcon('none');
                 });
 
-                th.querySelector('span.et-table-sort').innerHTML = tools.sorting.getIcon(ascending ? 'asc' : 'desc');
+                th.querySelector('span.et-table-sort').innerHTML = _this.tools.sorting.getIcon(ascending ? 'asc' : 'desc');
             },
         },
     };
 
     /******** PAGINATION ********/
 
-    let pagination = {
+    _this.pagination = {
         page_count: 1,
-        getRows: () => tools.isTable($element) ? $element.querySelectorAll(`tbody tr:not(.et-filtered)`) : [],
-        getRowsLength: () => pagination.getRows().length,
-        getPage: () => $properties.pageActive,
-        getPageSize: () => $properties.pageSize,
-        getPageStart: () => (!$properties.pagination || isNaN(pagination.getPageSize())) ? 1 : (($properties.pageActive - 1) * pagination.getPageSize()) + 1,
-        getPageEnd: () => (!$properties.pagination || isNaN(pagination.getPageSize())) ? pagination.getRowsLength() : (pagination.getPageStart() + pagination.getPageSize()) - 1,
+        getRows: () => _this.tools.isTable(_this.element) ? _this.element.querySelectorAll(`tbody tr:not(.et-filtered)`) : [],
+        getRowsLength: () => _this.pagination.getRows().length,
+        getPage: () => _this.properties.pageActive,
+        getPageSize: () => _this.properties.pageSize,
+        getPageStart: () => (!_this.properties.pagination || isNaN(_this.pagination.getPageSize())) ? 1 : ((_this.properties.pageActive - 1) * _this.pagination.getPageSize()) + 1,
+        getPageEnd: () => (!_this.properties.pagination || isNaN(_this.pagination.getPageSize())) ? _this.pagination.getRowsLength() : (_this.pagination.getPageStart() + _this.pagination.getPageSize()) - 1,
         setPage: (page = null) => {
-            $properties.pageActive = Math.max(1, Math.min(pagination.page_count, (isNaN(page) || page < 1) ? 1 : Math.max(page, 1)));
+            _this.properties.pageActive = Math.max(1, Math.min(_this.pagination.page_count, (isNaN(page) || page < 1) ? 1 : Math.max(page, 1)));
         },
         setPageCount: (page_count = null) => {
-            if (tools.isAjax()) {
-                pagination.page_count = !isNaN(page_count) ? page_count : 1;
+            if (_this.tools.isAjax()) {
+                _this.pagination.page_count = !isNaN(page_count) ? page_count : 1;
             } else {
-                pagination.page_count = isNaN(pagination.getPageSize()) ? 1 : Math.ceil(pagination.getRowsLength() / pagination.getPageSize());
+                _this.pagination.page_count = isNaN(_this.pagination.getPageSize()) ? 1 : Math.ceil(_this.pagination.getRowsLength() / _this.pagination.getPageSize());
             }
         },
         draw: () => {
-            if (pagination.page_count > 1) {
+            if (_this.pagination.page_count > 1) {
                 let inner_html = [
                     '<ul id="et-pagination" class="pagination">',
                     '<li class="page-item">',
                         '<a class="page-link" href="#" aria-label="Previous" data-page="prev">',
-                            `<span aria-hidden="true">${tools.buildIcon($properties.paginationPrevious.arrow)}</span>`,
+                            `<span aria-hidden="true">${_this.tools.buildIcon(_this.properties.paginationPrevious.arrow)}</span>`,
                         '</a>',
                     '</li>',
                 ];
 
-                if ($properties.pageActive > pagination.page_count) pagination.setPage(pagination.page_count);
+                if (_this.properties.pageActive > _this.pagination.page_count) _this.pagination.setPage(_this.pagination.page_count);
 
-                if (!isNaN($properties.paginationSideLinks) && $properties.paginationSideLinks > 0 && pagination.page_count > ($properties.paginationSideLinks + 3)) {
+                if (!isNaN(_this.properties.paginationSideLinks) && _this.properties.paginationSideLinks > 0 && _this.pagination.page_count > (_this.properties.paginationSideLinks + 3)) {
                     let side_links = {
-                        start: $properties.pageActive - $properties.paginationSideLinks,
-                        end: $properties.pageActive + $properties.paginationSideLinks,
+                        start: _this.properties.pageActive - _this.properties.paginationSideLinks,
+                        end: _this.properties.pageActive + _this.properties.paginationSideLinks,
                     };
 
                     if (side_links.start <= 0) {
                         side_links.end += (Math.abs(side_links.start) + 1)
                         side_links.start = 1;
-                    } else if (side_links.end > pagination.page_count - 1) {
-                        side_links.start -= (side_links.end - pagination.page_count);
-                        side_links.end = pagination.page_count;
+                    } else if (side_links.end > _this.pagination.page_count - 1) {
+                        side_links.start -= (side_links.end - _this.pagination.page_count);
+                        side_links.end = _this.pagination.page_count;
                     }
 
-                    for (let i = 1; i <= pagination.page_count; i++) {
-                        if (i == 1 || i == pagination.page_count || (i >= side_links.start && i <= side_links.end)) {
+                    for (let i = 1; i <= _this.pagination.page_count; i++) {
+                        if (i == 1 || i == _this.pagination.page_count || (i >= side_links.start && i <= side_links.end)) {
                             inner_html.push(
-                                `<li class="page-item ${(i == $properties.pageActive ? 'active' : '')}">`,
+                                `<li class="page-item ${(i == _this.properties.pageActive ? 'active' : '')}">`,
                                     `<a class="page-link" href="#" data-page="${i}">${i}</a>`,
                                 '</li>'
                             );
@@ -507,15 +509,15 @@ var EasyTable = (function() {
                                 if (i < side_links.start) {
                                     i = side_links.start - 1;
                                 } else if (i > side_links.end) {
-                                    i = Math.max(1, pagination.page_count - 1);
+                                    i = Math.max(1, _this.pagination.page_count - 1);
                                 }
                             }
                         }
                     }
                 } else {
-                    for (let i = 1; i <= pagination.page_count; i++) {
+                    for (let i = 1; i <= _this.pagination.page_count; i++) {
                         inner_html.push(
-                            `<li class="page-item ${(i == $properties.pageActive ? 'active' : '')}">`,
+                            `<li class="page-item ${(i == _this.properties.pageActive ? 'active' : '')}">`,
                                 `<a class="page-link" href="#" data-page="${i}">${i}</a>`,
                             '</li>'
                         );
@@ -525,77 +527,77 @@ var EasyTable = (function() {
                 inner_html.push(
                     '<li class="page-item">',
                         '<a class="page-link" href="#" aria-label="Next" data-page="next">',
-                            `<span aria-hidden="true">${tools.buildIcon($properties.paginationNext.arrow)}</span>`,
+                            `<span aria-hidden="true">${_this.tools.buildIcon(_this.properties.paginationNext.arrow)}</span>`,
                         '</a>',
                     '</li>',
                     '</ul>'
                 );
 
-                $element.querySelector($properties.paginationContainer).innerHTML = inner_html.join('');
+                _this.element.querySelector(_this.properties.paginationContainer).innerHTML = inner_html.join('');
 
-                if (tools.isAjax()) {
-                    $element.querySelectorAll('a.page-link').forEach(element => {
+                if (_this.tools.isAjax()) {
+                    _this.element.querySelectorAll('a.page-link').forEach(element => {
                         element.addEventListener('click', (event) => {
-                            tools.pagination.onClickAjax(event)
+                            _this.tools.pagination.onClickAjax(event)
                         });
                     });
                 } else {
-                    $element.querySelectorAll('a.page-link').forEach(element => {
+                    _this.element.querySelectorAll('a.page-link').forEach(element => {
                         element.addEventListener('click', (event) => {
-                            tools.pagination.onClick(event)
+                            _this.tools.pagination.onClick(event)
                         });
                     });
                 }
             } else {
-                document.querySelector($properties.paginationContainer).innerHTML = '';
+                document.querySelector(_this.properties.paginationContainer).innerHTML = '';
             }
         },
         drawCount: () => {
-            tools.pagination.drawCount(
-                pagination.getPageStart(),
-                Math.min(pagination.getPageEnd(), pagination.getRowsLength()),
-                pagination.getRowsLength()
+            _this.tools.pagination.drawCount(
+                _this.pagination.getPageStart(),
+                Math.min(_this.pagination.getPageEnd(), _this.pagination.getRowsLength()),
+                _this.pagination.getRowsLength()
             );
         },
-        drawPage: () => {
-            if (tools.isTable($element) && !tools.isAjax()) {
-                if (!$_init) {
-                    tools.hideElements($element.querySelectorAll('tbody tr'));
-                    tools.showElements(Array.from($element.querySelectorAll('tbody tr:not(.et-filtered')).slice(pagination.getPageStart() - 1, pagination.getPageEnd()));
+        drawPage: (init = false) => {
+            if (_this.tools.isTable(_this.element) && !_this.tools.isAjax()) {
+                if (!init) {
+                    _this.tools.hideElements(_this.element.querySelectorAll('tbody tr'));
+                    _this.tools.showElements(Array.from(_this.element.querySelectorAll('tbody tr:not(.et-filtered')).slice(_this.pagination.getPageStart() - 1, _this.pagination.getPageEnd()));
                 } else {
-                    tools.hideElements(Array.from($element.querySelectorAll('tbody tr:not(.et-filtered')).slice(pagination.getPageEnd()));
+                    _this.tools.hideElements(Array.from(_this.element.querySelectorAll('tbody tr:not(.et-filtered')).slice(_this.pagination.getPageEnd()));
                 }
             }
         },
         init: () => {
-            if ($properties.pagination) {
-                pagination.setPageCount();
-                pagination.drawPage();
-                pagination.draw();
-                pagination.drawCount();
+            if (_this.properties.pagination) {
+                _this.pagination.setPageCount();
+                _this.pagination.drawPage(true);
+                _this.pagination.draw();
+                _this.pagination.drawCount();
 
-                if ($properties.pageSizeSelector.length) {
-                    let page_size_selector = document.querySelector($properties.pageSizeSelector);
-                    if (tools.isSelect(page_size_selector)) {
+                if (_this.properties.pageSizeSelector.length) {
+                    let page_size_selector = document.querySelector(_this.properties.pageSizeSelector);
+                    if (_this.tools.isSelect(page_size_selector)) {
                         page_size_selector.addEventListener('change', (event) => {
                             let page_size = parseInt(event.target.value);
 
-                            if (tools.isAjax()) {
-                                $properties = tools.mergeProperties($properties, {
+                            if (_this.tools.isAjax()) {
+                                _this.properties = _this.tools.mergeProperties(_this.properties, {
                                     pageSize: isNaN(page_size) ? '' : page_size
                                 });
 
-                                if (!tools.isEmpty()) ajax.loadPage(1);
+                                if (!_this.tools.isEmpty()) _this.ajax.loadPage(1);
                             } else {
-                                $properties = tools.mergeProperties($properties, {
-                                    pageSize: isNaN(page_size) ? pagination.getRowsLength() : page_size
+                                _this.properties = _this.tools.mergeProperties(_this.properties, {
+                                    pageSize: isNaN(page_size) ? _this.pagination.getRowsLength() : page_size
                                 });
 
-                                pagination.setPage(1);
-                                pagination.setPageCount();
-                                pagination.drawPage();
-                                pagination.draw();
-                                pagination.drawCount();
+                                _this.pagination.setPage(1);
+                                _this.pagination.setPageCount();
+                                _this.pagination.drawPage(true);
+                                _this.pagination.draw();
+                                _this.pagination.drawCount();
                             }
                         });
                     }
@@ -606,32 +608,39 @@ var EasyTable = (function() {
 
     /******** SORTING ********/
 
-    let sorting = {
+    _this.sorting = {
         getCellValue: (tr, index) => {
             let value = tr.children[index].innerText || tr.children[index].textContent;
-            return value.replace(/\s+/g, ' ').trim();
+            value = value.replace(/\s+/g, ' ').trim();
+            
+            if (!value.length) {
+                let input = tr.querySelector('input[type=text]');
+                if (input != null) value = input.value.replace(/\s+/g, ' ').trim();
+            }
+
+            return value;
         },
         comparer: (index, asc) => {
             return (a, b) => {
                 return function(v1, v2) {
                     return v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2);
-                }(sorting.getCellValue(asc ? a : b, index), sorting.getCellValue(asc ? b : a, index));
+                }(_this.sorting.getCellValue(asc ? a : b, index), _this.sorting.getCellValue(asc ? b : a, index));
             }
         },
         init: () => {
-            if ($properties.sorting) {
-                if (tools.isTable($element)) {
-                    $element.querySelectorAll('thead > tr > th.et-sortable').forEach(element => {
+            if (_this.properties.sorting) {
+                if (_this.tools.isTable(_this.element)) {
+                    _this.element.querySelectorAll('thead > tr > th.et-sortable').forEach(element => {
                         element.style.cursor = 'pointer';
-                        element.innerHTML = element.innerHTML + `<span class="et-table-sort" style="margin-left: 5px;">${tools.sorting.getIcon('none')}</span>`;
+                        element.innerHTML = element.innerHTML + `<span class="et-table-sort" style="margin-left: 5px;">${_this.tools.sorting.getIcon('none')}</span>`;
 
-                        if (tools.isAjax()) {
+                        if (_this.tools.isAjax()) {
                             element.addEventListener('click', (event) => {
-                                tools.sorting.onClickAjax(event);
+                                _this.tools.sorting.onClickAjax(event);
                             });
                         } else {
                             element.addEventListener('click', (event) => {
-                                tools.sorting.onClick(event, element);
+                                _this.tools.sorting.onClick(event, element);
                             });
                         }
                     });
@@ -639,8 +648,8 @@ var EasyTable = (function() {
             }
         },
         reset: () => {
-            $element.querySelectorAll('thead > tr > th.et-sortable').forEach(e => {
-                e.querySelector('span.et-table-sort').innerHTML = tools.sorting.getIcon();
+            _this.element.querySelectorAll('thead > tr > th.et-sortable').forEach(e => {
+                e.querySelector('span.et-table-sort').innerHTML = _this.tools.sorting.getIcon();
                 e.dataset.ascending = '1';
             });
         },
@@ -648,26 +657,30 @@ var EasyTable = (function() {
 
     /******** FILTERING ********/
 
-    let filtering = {
+    _this.filtering = {
         columns: [],
         timer_name: 'et-run-filter',
         run: () => {
-            let value = document.querySelector($properties.filteringInput).value;
+            let value = document.querySelector(_this.properties.filteringInput).value;
 
-            if (tools.isTable($element)) {
+            if (_this.tools.isTable(_this.element)) {
                 if (value.length) {
-                    $element.querySelectorAll('tbody tr').forEach(element => {
+                    _this.element.querySelectorAll('tbody tr').forEach(element => {
                         let result = false;
                         let loop_stop = false;
 
                         element.querySelectorAll('td').forEach((e, i) => {
                             if (loop_stop) return;
 
-                            if (Object.keys(filtering.columns).includes(i.toString())) {
+                            if (Object.keys(_this.filtering.columns).includes(i.toString())) {
                                 let text = e.innerText.toString().trim().toLowerCase();
+                                if (!text.length) {
+                                    let input = e.querySelector('input[type=text]');
+                                    if (input != null) text = input.value.toString().trim().toLowerCase();
+                                }
 
-                                if (filtering.columns[i.toString()].hasOwnProperty('type')) {
-                                    switch (filtering.columns[i.toString()].type) {
+                                if (_this.filtering.columns[i.toString()].hasOwnProperty('type')) {
+                                    switch (_this.filtering.columns[i.toString()].type) {
                                         case 'phone_number':
                                             text = text.replace(/\D/g, '');
                                             break;
@@ -689,52 +702,52 @@ var EasyTable = (function() {
                         }
                     });
                 } else {
-                    $element.querySelectorAll('tbody tr').forEach(e => e.classList.remove('et-filtered'));
+                    _this.element.querySelectorAll('tbody tr').forEach(e => e.classList.remove('et-filtered'));
                 }
             }
         },
         init: () => {
-            if ($properties.filtering) {
-                if (tools.isTable($element)) {
-                    filtering.columns = [];
-                    $element.querySelectorAll('thead th').forEach((element, index) => {
+            if (_this.properties.filtering) {
+                if (_this.tools.isTable(_this.element)) {
+                    _this.filtering.columns = [];
+                    _this.element.querySelectorAll('thead th').forEach((element, index) => {
                         if (element.classList.contains('et-filter')) {
-                            filtering.columns[index] = {
+                            _this.filtering.columns[index] = {
                                 type: element.dataset.type,
                             };
                         }
                     });
 
-                    let filter_input = document.querySelector($properties.filteringInput);
+                    let filter_input = document.querySelector(_this.properties.filteringInput);
 
                     if (filter_input != undefined) {
                         let _filter = () => {
-                            filtering.run();
+                            _this.filtering.run();
 
-                            if ($properties.pagination) {
-                                pagination.setPageCount();
-                                pagination.setPage(1);
-                                pagination.draw();
-                                pagination.drawPage();
-                                pagination.drawCount();
+                            if (_this.properties.pagination) {
+                                _this.pagination.setPageCount();
+                                _this.pagination.setPage(1);
+                                _this.pagination.draw();
+                                _this.pagination.drawPage(true);
+                                _this.pagination.drawCount();
                             } else {
-                                tools.hideElements($element.querySelectorAll('tbody tr.et-filtered'));
-                                tools.showElements($element.querySelectorAll('tbody tr:not(.et-filtered)'));
+                                _this.tools.hideElements(_this.element.querySelectorAll('tbody tr.et-filtered'));
+                                _this.tools.showElements(_this.element.querySelectorAll('tbody tr:not(.et-filtered)'));
                             }
                         };
 
-                        if ($properties.filteringTrigger.length) {
-                            let filter_trigger = document.querySelector($properties.filteringTrigger);
+                        if (_this.properties.filteringTrigger.length) {
+                            let filter_trigger = document.querySelector(_this.properties.filteringTrigger);
                             if (filter_trigger != undefined) {
-                                if (tools.isButton(filter_trigger)) {
+                                if (_this.tools.isButton(filter_trigger)) {
                                     filter_trigger.addEventListener('click', (e) => _filter());
                                 }
                             }
                         } else {
-                            if (tools.isInputText(filter_input)) {
+                            if (_this.tools.isInputText(filter_input)) {
                                 filter_input.addEventListener('input', (e) => {
-                                    timer.stop(filtering.timer_name);
-                                    timer.add(() => _filter(), [], (e.inputType != undefined ? 1000 : 0), filtering.timer_name);
+                                    _this.timer.stop(_this.filtering.timer_name);
+                                    _this.timer.add(() => _filter(), [], (e.inputType != undefined ? 1000 : 0), _this.filtering.timer_name);
                                 });
                             }
                         }
@@ -744,9 +757,9 @@ var EasyTable = (function() {
         },
     };
 
-    let $timers = [];
+    _this.timers = [];
 
-    let timer = {
+    _this.timer = {
         getIndex: (array, attr, value) => {
             for (let i = 0; i < array.length; i += 1) {
                 if (array[i][attr] === value) {
@@ -757,99 +770,99 @@ var EasyTable = (function() {
         },
         add: (callback, args = null, time = 0, name = null) => {
             let id = setTimeout(() => {
-                let index = (name != null) ? timer.getIndex($timers, 'name', name) : timer.getIndex($timers, 'id', id);
-                $timers.splice(index, 1);
+                let index = (name != null) ? _this.timer.getIndex(_this.timers, 'name', name) : _this.timer.getIndex(_this.timers, 'id', id);
+                _this.timers.splice(index, 1);
                 if (!Array.isArray(args)) args = [];
                 callback.apply(this, args);
             }, time);
 
-            $timers.push({
+            _this.timers.push({
                 id: id,
                 name: name,
                 time: time
             });
         },
-        all: () => $timers,
+        all: () => _this.timers,
         stop: (x) => {
-            let index = !isNaN(x) ? timer.getIndex($timers, 'id', x) : timer.getIndex($timers, 'name', x);
+            let index = !isNaN(x) ? _this.timer.getIndex(_this.timers, 'id', x) : _this.timer.getIndex(_this.timers, 'name', x);
 
             if (index !== -1) {
-                clearTimeout($timers[index].id);
-                $timers.splice(index, 1);
+                clearTimeout(_this.timers[index].id);
+                _this.timers.splice(index, 1);
             }
         },
         stopAll: () => {
-            for (let i = 0; i < $timers.length; i++) {
-                clearTimeout($timers[i].id);
+            for (let i = 0; i < _this.timers.length; i++) {
+                clearTimeout(_this.timers[i].id);
             }
 
-            $timers = [];
+            _this.timers = [];
         }
     };
 
     /********* AJAX *********/
 
-    let ajax = {
+    _this.ajax = {
         loadPage: (page, reset_sort) => {
-            tools.loadingOverlay('start', tools.isTable($element) ? $element.querySelector('tbody').clientHeight + 'px' : null);
+            _this.tools.loadingOverlay('start', _this.tools.isTable(_this.element) ? _this.element.querySelector('tbody').clientHeight + 'px' : null);
 
-            let data = typeof $properties.ajax.data == 'function' ? $properties.ajax.data() : $properties.ajax.data;
+            let data = typeof _this.properties.ajax.data == 'function' ? _this.properties.ajax.data() : _this.properties.ajax.data;
 
-            if ($properties.pagination) {
+            if (_this.properties.pagination) {
                 if (data instanceof FormData) {
-                    data.set('page', !isNaN(page) ? page : pagination.getPage());
-                    data.set('limit', pagination.getPageSize());
+                    data.set('page', !isNaN(page) ? page : _this.pagination.getPage());
+                    data.set('limit', _this.pagination.getPageSize());
                 } else if (typeof data == 'object') {
-                    data['page'] = !isNaN(page) ? page : pagination.getPage();
-                    data['limit'] = pagination.getPageSize();
+                    data['page'] = !isNaN(page) ? page : _this.pagination.getPage();
+                    data['limit'] = _this.pagination.getPageSize();
                 }
             }
 
             if (reset_sort) {
-                ajax.sorting.set(undefined, false);
-                sorting.reset();
+                _this.ajax.sorting.set(undefined, false);
+                _this.sorting.reset();
             }
 
-            if ($properties.sorting && ajax.sorting.getColumn() != undefined && ajax.sorting.getColumn().length) {
+            if (_this.properties.sorting && _this.ajax.sorting.getColumn() != undefined && _this.ajax.sorting.getColumn().length) {
                 if (data instanceof FormData) {
-                    data.set('column', ajax.sorting.getColumn());
-                    data.set('direction', ajax.sorting.getDirection());
+                    data.set('column', _this.ajax.sorting.getColumn());
+                    data.set('direction', _this.ajax.sorting.getDirection());
                 } else {
-                    data['column'] = ajax.sorting.getColumn();
-                    data['direction'] = ajax.sorting.getDirection();
+                    data['column'] = _this.ajax.sorting.getColumn();
+                    data['direction'] = _this.ajax.sorting.getDirection();
                 }
             }
 
             const xhttp = new XMLHttpRequest();
 
             xhttp.onload = function() {
-                let response = JSON.parse(this.responseText);
+                let response = JSON.parse(_this.responseText);
 
-                if (this.status == 200) {
+                if (_this.status == 200) {
                     if (response.success) {
-                        ajax.pagination.drawPage(response.data.hasOwnProperty('data') ? response.data.data : response.data);
-                        ajax.pagination.draw(response.data.hasOwnProperty('data') ? response.data : null);
-                        ajax.pagination.drawCount(response.data.hasOwnProperty('data') ? response.data : null);
+                        _this.ajax.pagination.drawPage(response.data.hasOwnProperty('data') ? response.data.data : response.data);
+                        _this.ajax.pagination.draw(response.data.hasOwnProperty('data') ? response.data : null);
+                        _this.ajax.pagination.drawCount(response.data.hasOwnProperty('data') ? response.data : null);
                     } else {
-                        // tools.showEmpty();
+                        // _this.tools.showEmpty();
                     }
 
-                    if (typeof $properties.ajax.handlers.success == 'function') {
-                        $properties.ajax.handlers.success(response);
+                    if (typeof _this.properties.ajax.handlers.success == 'function') {
+                        _this.properties.ajax.handlers.success(response);
                     }
                 } else {
-                    tools.showEmpty();
-                    if (typeof $properties.ajax.handlers.error == 'function') {
-                        $properties.ajax.handlers.error(this, response.message, this.statusText);
+                    _this.tools.showEmpty();
+                    if (typeof _this.properties.ajax.handlers.error == 'function') {
+                        _this.properties.ajax.handlers.error(this, response.message, _this.statusText);
                     } else {
-                        alert(this.statusText);
+                        alert(_this.statusText);
                     }
                 }
             };
 
-            xhttp.open($properties.ajax.type, $properties.ajax.url);
+            xhttp.open(_this.properties.ajax.type, _this.properties.ajax.url);
 
-            if ($properties.ajax.type == 'POST') {
+            if (_this.properties.ajax.type == 'POST') {
                 xhttp.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
                 xhttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
@@ -860,46 +873,46 @@ var EasyTable = (function() {
         },
         pagination: {
             draw: (data) => {
-                pagination.setPage(data != null ? data.current_page : 1);
-                pagination.setPageCount(data != null ? data.last_page : 1);
-                pagination.draw();
+                _this.pagination.setPage(data != null ? data.current_page : 1);
+                _this.pagination.setPageCount(data != null ? data.last_page : 1);
+                _this.pagination.draw();
             },
             drawPage: (data) => {
-                if (tools.isTable($element)) {
+                if (_this.tools.isTable(_this.element)) {
                     if (data.length) {
-                        $element.querySelector('tbody').replaceChildren();
+                        _this.element.querySelector('tbody').replaceChildren();
 
                         for (const key in data) {
                             let tr = document.createElement('tr');
                             let tds = '';
 
-                            for (let i = 0; i < $properties.ajax.columns.length; i++) {
-                                tds += `<td>${data[key][$properties.ajax.columns[i]]}</td>`;
+                            for (let i = 0; i < _this.properties.ajax.columns.length; i++) {
+                                tds += `<td>${data[key][_this.properties.ajax.columns[i]]}</td>`;
                             }
 
                             tr.innerHTML = tds;
 
-                            $element.querySelector('tbody').appendChild(tr);
+                            _this.element.querySelector('tbody').appendChild(tr);
                         }
                     } else {
-                        tools.showEmpty();
+                        _this.tools.showEmpty();
                     }
                 }
             },
             drawCount: (data) => {
                 if (data == null) {
-                    tools.pagination.drawCount(1, false, false);
+                    _this.tools.pagination.drawCount(1, false, false);
                 } else {
-                    tools.pagination.drawCount(data.from, data.to, data.total);
+                    _this.tools.pagination.drawCount(data.from, data.to, data.total);
                 }
             },
         },
         sorting: {
-            getColumn: () => $properties.ajax.sorting.column,
-            getDirection: () => $properties.ajax.sorting.desc ? 'DESC' : 'ASC',
+            getColumn: () => _this.properties.ajax.sorting.column,
+            getDirection: () => _this.properties.ajax.sorting.desc ? 'DESC' : 'ASC',
             set: (column, desc = false) => {
-                $properties.ajax.sorting.column = column;
-                $properties.ajax.sorting.desc = desc;
+                _this.properties.ajax.sorting.column = column;
+                _this.properties.ajax.sorting.desc = desc;
             },
         }
     };
@@ -912,48 +925,46 @@ var EasyTable = (function() {
      * @param {String} selector
      * @param {Object} options
      */
-    let init = (selector, options) => {
-        if ($_init) {
-            $element = document.querySelector(selector);
+    function init(selector, options) {
+        _this.element = document.querySelector(selector);
 
-            if ($element == undefined) throw new Error('No element found for EasyTable');
-            if (!tools.isTable($element)) throw new Error('EasyTable currently only handles tables');
+        if (_this.element == undefined) throw new Error('No element found for EasyTable');
+        if (!_this.tools.isTable(_this.element)) throw new Error('EasyTable currently only handles tables');
 
-            if (tools.isAjax()) {
-                if (!ajax.hasOwnProperty('columns')) throw new Error('"columns" must be defined in AJAX mode');
-            }
-
-            if (typeof options == 'object') {
-                $properties = tools.mergeProperties($properties, options);
-            }
-
-            pagination.init();
-            sorting.init();
-            filtering.init();
-
-            if (tools.isAjax() && !$element.querySelectorAll('tbody > tr').length) {
-                tools.showEmpty();
-            }
-
-            if ($properties.stickyHeader) {
-                $element.querySelectorAll('thead th').forEach(function(el) {
-                    el.style.position = 'sticky';
-
-                    if (typeof $properties.stickyHeaderTop == 'function') {
-                        window.addEventListener('load', (event) => $properties.stickyHeaderTop(el), true);
-                        window.addEventListener('resize', (event) => $properties.stickyHeaderTop(el), true);
-                    } else {
-                        el.style.top = $properties.stickyHeaderTop;
-                    }
-                });
-            }
-
-            $_init = false;
+        if (_this.tools.isAjax()) {
+            if (!_this.ajax.hasOwnProperty('columns')) throw new Error('"columns" must be defined in AJAX mode');
         }
-    };
+
+        if (typeof options == 'object') {
+            _this.properties = _this.tools.mergeProperties(_this.properties, options);
+        }
+
+        _this.pagination.init();
+        _this.sorting.init();
+        _this.filtering.init();
+
+        if (_this.tools.isAjax() && !_this.element.querySelectorAll('tbody > tr').length) {
+            _this.tools.showEmpty();
+        }
+
+        if (_this.properties.stickyHeader) {
+            _this.element.querySelectorAll('thead th').forEach(function(el) {
+                el.style.position = 'sticky';
+
+                if (typeof _this.properties.stickyHeaderTop == 'function') {
+                    window.addEventListener('load', (event) => _this.properties.stickyHeaderTop(el), true);
+                    window.addEventListener('resize', (event) => _this.properties.stickyHeaderTop(el), true);
+                } else {
+                    el.style.top = _this.properties.stickyHeaderTop;
+                }
+            });
+        }
+    }
+
+    init(selector, options);
 
     return EasyTable;
-})();
+};
 
 // Add CommonJS module exports, so it can be imported using require() in Node.js
 // https://nodejs.org/docs/latest/api/modules.html
