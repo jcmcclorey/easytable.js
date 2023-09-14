@@ -276,15 +276,22 @@ function EasyTable(selector, options = []) {
                         for (const k in options[o]) {
                             properties[o][k] = options[o][k];
                         }
+
                         break;
                     case 'dataType':
                         let data_types = ['html', 'ajax'];
                         properties[o] = data_types.includes(options[o]) ? options[o] : data_types[0];
+
+                        break;
                     case 'pageActive':
                         let value = parseInt(options[o]);
                         if (!isNaN(value)) properties[o] = value;
+
+                        break;
                     case 'pageSize':
                         properties[o] = parseInt(options[o]);
+
+                        break;
                     default:
                         properties[o] = options[o];
                         break;
