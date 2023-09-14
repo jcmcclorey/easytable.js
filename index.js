@@ -601,7 +601,7 @@ function EasyTable(selector, options = []) {
 
                                 _this.pagination.setPage(1);
                                 _this.pagination.setPageCount();
-                                _this.pagination.drawPage(true);
+                                _this.pagination.drawPage();
                                 _this.pagination.draw();
                                 _this.pagination.drawCount();
                             }
@@ -734,7 +734,7 @@ function EasyTable(selector, options = []) {
                                 _this.pagination.setPageCount();
                                 _this.pagination.setPage(1);
                                 _this.pagination.draw();
-                                _this.pagination.drawPage(true);
+                                _this.pagination.drawPage();
                                 _this.pagination.drawCount();
                             } else {
                                 _this.tools.hideElements(_this.element.querySelectorAll('tbody tr.et-filtered'));
