@@ -55,7 +55,6 @@ function EasyTable(selector, options = []) {
      *      - asc - sorting ascending
      *      - desc - sorting descending
      */
-    // let _this.properties = {
     _this.properties = {
         ajax: {
             columns: [],
@@ -106,14 +105,14 @@ function EasyTable(selector, options = []) {
      * 
      * @returns {Number}
      */
-    EasyTable.prototype.getCurrentPage = () => _this.pagination.getPage();
+    EasyTable.getCurrentPage = () => _this.pagination.getPage();
 
     /**
      * set the current page
      * 
      * @param {Number} page
      */
-    EasyTable.prototype.setCurrentPage = (page = 1) => {
+    EasyTable.setCurrentPage = (page = 1) => {
         if (_this.properties.pagination) _this.pagination.setPage(page);
     };
 
@@ -122,7 +121,7 @@ function EasyTable(selector, options = []) {
      * 
      * @returns {Object}
      */
-    EasyTable.prototype.getProperties = () => _this.properties;
+    EasyTable.getProperties = () => _this.properties;
 
     /**
      * load a page
@@ -130,12 +129,12 @@ function EasyTable(selector, options = []) {
      * @param {Number}  page
      * @param {Boolean} reset_sort
      */
-    EasyTable.prototype.loadPage = (page = null, reset_sort = false) => _this.ajax.loadPage(page, reset_sort);
+    EasyTable.loadPage = (page = null, reset_sort = false) => _this.ajax.loadPage(page, reset_sort);
 
     /**
      * refresh EasyTable
      */
-    EasyTable.prototype.refresh = () => {
+    EasyTable.refresh = () => {
         if (Math.ceil(_this.pagination.getRowsLength() / _this.pagination.getPageSize()) < _this.pagination.getPage()) {
             _this.pagination.setPage(Math.floor(_this.pagination.getRowsLength() / _this.pagination.getPageSize()))
         }
@@ -151,7 +150,7 @@ function EasyTable(selector, options = []) {
      * 
      * @param {String} event 
      */
-    EasyTable.prototype.trigger = (event) => {
+    EasyTable.trigger = (event) => {
         switch (event) {
             case 'filter':
                 _this.filtering.run();
