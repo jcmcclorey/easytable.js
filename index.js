@@ -842,9 +842,9 @@ function EasyTable(selector, options = []) {
             const xhttp = new XMLHttpRequest();
 
             xhttp.onload = function() {
-                let response = JSON.parse(_this.responseText);
+                let response = JSON.parse(this.responseText);
 
-                if (_this.status == 200) {
+                if (this.status == 200) {
                     if (response.success) {
                         _this.ajax.pagination.drawPage(response.data.hasOwnProperty('data') ? response.data.data : response.data);
                         _this.ajax.pagination.draw(response.data.hasOwnProperty('data') ? response.data : null);
@@ -859,9 +859,9 @@ function EasyTable(selector, options = []) {
                 } else {
                     _this.tools.showEmpty();
                     if (typeof _this.properties.ajax.handlers.error == 'function') {
-                        _this.properties.ajax.handlers.error(this, response.message, _this.statusText);
+                        _this.properties.ajax.handlers.error(this, response.message, this.statusText);
                     } else {
-                        alert(_this.statusText);
+                        alert(this.statusText);
                     }
                 }
             };
