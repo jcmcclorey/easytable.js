@@ -364,6 +364,12 @@ function EasyTable(selector, options = []) {
                 }
             },
         },
+        removeEmpty: () => {
+            if (_this.tools.isTable(_this.element)) {
+                _this.element.querySelector('tbody tr.et-empty-row').remove();
+                _this.tools.showElement(_this.element.querySelector('tfoot'));
+            }
+        },
         showElement: (element) => element.style.display = null,
         showElements: (elements) => {
             for (let i = 0; i < elements.length; i++) {
@@ -372,12 +378,11 @@ function EasyTable(selector, options = []) {
         },
         showEmpty: () => {
             if (_this.tools.isTable(_this.element)) {
-                _this.element.querySelector('tbody').innerHTML = [
-                    `<tr>`,
-                        `<td style="text-align: center;" colspan="18">${_this.tools.isAjax() ? _this.properties.ajax.emptyText : _this.properties.emptyText}</td>`,
-                    `</tr>`
-                ].join('');
+                let tr = document.createElement('tr');
+                tr.classList.add('et-empty-row');
+                tr.innerHTML = `<td style="text-align: center;" colspan="18">${_this.tools.isAjax() ? _this.properties.ajax.emptyText : _this.properties.emptyText}</td>`;
 
+                _this.element.querySelector('tbody').appendChild(tr);
                 _this.tools.hideElement(_this.element.querySelector('tfoot'));
             }
         },
@@ -714,7 +719,11 @@ function EasyTable(selector, options = []) {
                     _this.element.querySelectorAll('tbody tr').forEach(e => e.classList.remove('et-filtered'));
                 }
 
-                
+                if (_this.element.querySelectorAll('tbody tr:not(.et-filtered)').length) {
+                    _this.tools.removeEmpty();
+                } else {
+                    _this.tools.showEmpty();
+                }
             }
         },
         init: () => {
