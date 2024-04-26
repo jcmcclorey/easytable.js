@@ -75,6 +75,7 @@ function EasyTable(selector, options = []) {
         countText: "Showing {PF} - {PL} of {TR} rows",
         countTextContainer: '',
         dataType: 'html',
+        emptyText: 'No Records Found',
         filtering: false,
         filteringInput: '',
         filteringTrigger: '',
@@ -373,9 +374,11 @@ function EasyTable(selector, options = []) {
             if (_this.tools.isTable(_this.element)) {
                 _this.element.querySelector('tbody').innerHTML = [
                     `<tr>`,
-                        `<td style="text-align: center;" colspan="18">${_this.properties.ajax.emptyText}</td>`,
+                        `<td style="text-align: center;" colspan="18">${_this.tools.isAjax() ? _this.properties.ajax.emptyText : _this.properties.emptyText}</td>`,
                     `</tr>`
                 ].join('');
+
+                _this.tools.hideElement(_this.element.querySelector('tfoot'));
             }
         },
         sorting: {
@@ -710,6 +713,8 @@ function EasyTable(selector, options = []) {
                 } else {
                     _this.element.querySelectorAll('tbody tr').forEach(e => e.classList.remove('et-filtered'));
                 }
+
+                
             }
         },
         init: () => {
@@ -949,7 +954,7 @@ function EasyTable(selector, options = []) {
         _this.sorting.init();
         _this.filtering.init();
 
-        if (_this.tools.isAjax() && !_this.element.querySelectorAll('tbody > tr').length) {
+        if (!_this.element.querySelectorAll('tbody > tr').length) {
             _this.tools.showEmpty();
         }
 
