@@ -366,8 +366,14 @@ function EasyTable(selector, options = []) {
         },
         removeEmpty: () => {
             if (_this.tools.isTable(_this.element)) {
-                _this.element.querySelector('tbody tr.et-empty-row').remove();
-                _this.tools.showElement(_this.element.querySelector('tfoot'));
+                let empty_row = _this.element.querySelector('tbody tr.et-empty-row');
+                if (empty_row != null) {
+                    empty_row.remove();
+                }
+
+                if (_this.element.querySelector('tfoot') != null) {
+                    _this.tools.showElement(_this.element.querySelector('tfoot'));
+                }
             }
         },
         showElement: (element) => element.style.display = null,
@@ -914,6 +920,8 @@ function EasyTable(selector, options = []) {
 
                             _this.element.querySelector('tbody').appendChild(tr);
                         }
+
+                        _this.tools.removeEmpty()
                     } else {
                         _this.tools.showEmpty();
                     }
