@@ -831,6 +831,7 @@ function EasyTable(selector, options = []) {
     _this.ajax = {
         loadPage: (page, reset_sort) => {
             _this.tools.loadingOverlay('start', _this.tools.isTable(_this.element) ? _this.element.querySelector('tbody').clientHeight + 'px' : null);
+            _this.tools.removeEmpty();
 
             let data = typeof _this.properties.ajax.data == 'function' ? _this.properties.ajax.data() : _this.properties.ajax.data;
 
@@ -877,6 +878,7 @@ function EasyTable(selector, options = []) {
                         _this.properties.ajax.handlers.success(response);
                     }
                 } else {
+                    _this.tools.loadingOverlay('stop');
                     _this.tools.showEmpty();
                     if (typeof _this.properties.ajax.handlers.error == 'function') {
                         _this.properties.ajax.handlers.error(this, response.message, this.statusText);
