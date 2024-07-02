@@ -17,6 +17,8 @@
  * @param {Object} options
  */
 function EasyTable(selector, options = []) {
+    const HTTP_SUCCESS = 200;
+
     let _this = this;
 
     /**
@@ -389,7 +391,10 @@ function EasyTable(selector, options = []) {
                 tr.innerHTML = `<td style="text-align: center;" colspan="18">${_this.tools.isAjax() ? _this.properties.ajax.emptyText : _this.properties.emptyText}</td>`;
 
                 _this.element.querySelector('tbody').appendChild(tr);
-                _this.tools.hideElement(_this.element.querySelector('tfoot'));
+
+                if (_this.element.querySelector('tfoot') != null) {
+                    _this.tools.hideElement(_this.element.querySelector('tfoot'));
+                }
             }
         },
         sorting: {
@@ -865,8 +870,9 @@ function EasyTable(selector, options = []) {
             xhttp.onload = function() {
                 let response = JSON.parse(this.responseText);
 
-                if (this.status == 200) {
+                if (this.status == HTTP_SUCCESS) {
                     if (response.success) {
+                        _this.tools.loadingOverlay('stop');
                         _this.ajax.pagination.drawPage(response.data.hasOwnProperty('data') ? response.data.data : response.data);
                         _this.ajax.pagination.draw(response.data.hasOwnProperty('data') ? response.data : null);
                         _this.ajax.pagination.drawCount(response.data.hasOwnProperty('data') ? response.data : null);
