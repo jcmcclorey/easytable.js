@@ -686,7 +686,7 @@ function EasyTable(selector, options = []) {
         columns: [],
         timer_name: 'et-run-filter',
         run: () => {
-            let value = document.querySelector(_this.properties.filteringInput).value;
+            let value = document.querySelector(_this.properties.filteringInput).value.trim();
 
             if (_this.tools.isTable(_this.element)) {
                 if (value.length) {
