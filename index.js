@@ -897,9 +897,17 @@ function EasyTable(selector, options = []) {
             xhttp.open(_this.properties.ajax.type, _this.properties.ajax.url);
 
             if (_this.properties.ajax.type == 'POST') {
-                xhttp.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                let element = document.querySelector('meta[name="csrf-token"]');
+                if (element != null) {
+                    xhttp.setRequestHeader('X-CSRF-TOKEN', element.getAttribute('content'));
+                }
+
+                if (data instanceof FormData) {
+                    xhttp.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                }
+
                 xhttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-                data instanceof FormData ? '' : xhttp.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+
                 xhttp.send(data instanceof FormData ? data : JSON.stringify(data));
             } else {
                 xhttp.send();
