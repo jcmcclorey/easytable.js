@@ -899,7 +899,7 @@ function EasyTable(selector, options = []) {
             if (_this.properties.ajax.type == 'POST') {
                 xhttp.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
                 xhttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-
+                data instanceof FormData ? '' : xhttp.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
                 xhttp.send(data instanceof FormData ? data : JSON.stringify(data));
             } else {
                 xhttp.send();
