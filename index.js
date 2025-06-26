@@ -902,7 +902,7 @@ function EasyTable(selector, options = []) {
                     xhttp.setRequestHeader('X-CSRF-TOKEN', element.getAttribute('content'));
                 }
 
-                if (data instanceof FormData) {
+                if (!data instanceof FormData) {
                     xhttp.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
                 }
 
