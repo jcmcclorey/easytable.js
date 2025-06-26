@@ -1,6 +1,6 @@
 {
   "name": "easytable.js",
-  "version": "2.0.12",
+  "version": "2.0.13",
   "description": "Vanilla JS package to add simple pagination, sorting and filtering to HTML tables",
   "main": "index.js",
   "scripts": {
